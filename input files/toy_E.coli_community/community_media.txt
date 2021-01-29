@@ -1,0 +1,7 @@
+EX_h(e) H+ -1000 1000
+EX_pi(e) Phosphate -1000 1000
+EX_o2(e) O2 -1000 1000
+EX_ac(e) Acetate 0 1000
+EX_h2o(e) H2O -1000 1000
+EX_co2(e) CO2 -1000 1000
+EX_glc__D(e) D-Glucose -1000 1000

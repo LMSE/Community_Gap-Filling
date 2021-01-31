@@ -2,7 +2,7 @@
 Source code and input files for reproducing the results presented in "Gap-Filling and Prediction of Metabolic Interactions in Microbial Communities".
 
 ## Input Files
-The folder input files contains all the necessary files for the use of the community gap-filling method as described in "Gap-Filling and Prediction of Metabolic Interactions in Microbial Communities" (not yet published).
+The folder input files contains all the necessary files for the use of the community gap-filling method.
 * The folder input files/database contains the database file (BiGG.mat).
 * The folder input files/toy_E.coli_community contains the models for the *E. coli* glucose utilizer (model1.mat) and the *E. coli* acetate utilizer (model2.mat), as well as the file with the permitted exchanges for the toy E. coli commuinity (community_media.txt).
 * The folder input files/toy_gut-microbiome_community contains the models for *B. adolescentis* ATCC 15703 (model1.mat) and *F. prausnitzii* A2-165 (model2.mat), as well as the file with the permitted exchanges for the commuinity (community_media.txt).

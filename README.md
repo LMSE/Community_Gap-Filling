@@ -4,8 +4,8 @@ Source code and input files for reproducing the results presented in "A gap-fill
 ## Input Files
 The folder input files contains all the necessary files for the use of the community gap-filling method.
 * The folder input files/database contains the database file (BiGG.mat).
-* The folder input files/toy_E.coli_community contains the models for the *E. coli* glucose utilizer (model1.mat) and the *E. coli* acetate utilizer (model2.mat), as well as the file with the permitted exchanges for the toy E. coli commuinity (community_media.txt).
-* The folder input files/toy_gut-microbiome_community contains the models for *B. adolescentis* ATCC 15703 (model1.mat) and *F. prausnitzii* A2-165 (model2.mat), as well as the file with the permitted exchanges for the commuinity (community_media.txt).
+* The folder input files/core_E.coli_community contains the models for the *E. coli* glucose utilizer (model1.mat) and the *E. coli* acetate utilizer (model2.mat), as well as the file with the permitted exchanges for the toy E. coli commuinity (community_media.txt).
+* The folder input files/gut-microbiome_community contains the models for *B. adolescentis* ATCC 15703 (model1.mat) and *F. prausnitzii* A2-165 (model2.mat), as well as the file with the permitted exchanges for the commuinity (community_media.txt).
 * The folder input files/ACT-3_community contains the models for *Dehalobacter* sp. CF (model1.mat) and *Bacteroidales* sp. CF50 (model2.mat), as well as the file with the permitted exchanges for the commuinity (community_media.txt). 
 
 ## Source Code 

@@ -7,6 +7,8 @@ DB = readCbModel('BiGG.mat');  % database
 model1 = readCbModel('model1.mat');  % model of organism 1
 model2 = readCbModel('model2.mat');  % model of organism 2
 community_media = textscan(fopen('community_media.txt'),'%s %s %d %d');  % media for the community
+f1 = 0.5;  % relative abundance of organism 1 in the community
+f2 = 0.5;  % relative abundance of organism 2 in the community
 
 %% Create the community model
 
@@ -21,8 +23,8 @@ community = mergeTwoModels(member1,member2);
 [~,ibio2] = ismember('BIOMASS_m2',community.rxns);
 community.c(ibio1) = 1;
 community.c(ibio2) = 1;
-community = changeRxnBounds(community,community.rxns(ibio1),1,'l');
-community = changeRxnBounds(community,community.rxns(ibio2),0.1,'l');
+community = changeRxnBounds(community,community.rxns(ibio1),0.9,'l');
+community = changeRxnBounds(community,community.rxns(ibio2),0.09,'l');
 
 %% Make the common exchange compartment
 EX_name = community_media{1};
@@ -81,16 +83,16 @@ end
 ctype = char(['C' * ones(1,nrxns) 'B' * ones(1,nrxns)]);
 f = [sparse(nrxns,1); d1+d2+d3];
 
-lb_all = spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns))*community.lb;
-ub_all = spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns))*community.ub;
+lb_all = spdiags(f1*m1+f1*d1+f2*m2+f2*d2+e+d3,0,sparse(nrxns,nrxns))*community.lb;
+ub_all = spdiags(f1*m1+f1*d1+f2*m2+f2*d2+e+d3,0,sparse(nrxns,nrxns))*community.ub;
 
 Aineq = [-spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns)) spdiags(lb_all,0,sparse(nrxns,nrxns));
           spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns)) -spdiags(ub_all,0,sparse(nrxns,nrxns))];
 bineq = sparse(2*nrxns,1);
 Aeq = [community.S sparse(nmets,nrxns)];
 beq = sparse(nmets,1);
-lb = [community.lb; m1+m2+e];
-ub = [community.ub; ones(nrxns,1)];
+lb = [(f1*m1+f1*d1+f2*m2+f2*d2+e+d3).*community.lb; m1+m2+e];
+ub = [(f1*m1+f1*d1+f2*m2+f2*d2+e+d3).*community.ub; ones(nrxns,1)];
 
 prob.ctype = ctype;
 prob.f = f;

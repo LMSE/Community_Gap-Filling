@@ -6,6 +6,7 @@ changeCobraSolver('ibm_cplex','all');
 DB = readCbModel('BiGG.mat');  % database
 model1 = readCbModel('model1.mat');  % model of organism 1
 model2 = readCbModel('model2.mat');  % model of organism 2
+model3 = readCbModel('model3.mat');  % model of organism 3
 community_media = textscan(fopen('community_media.txt'),'%s %s %d %d');  % media for the community
 
 %% Create the community model
@@ -13,16 +14,21 @@ community_media = textscan(fopen('community_media.txt'),'%s %s %d %d');  % media
 % Make the organism compartments and combine them.
 member1 = make_member(1,DB,model1);
 member2 = make_member(2,DB,model2);
+member3 = make_member(3,DB,model3);
 delete(gcp('nocreate'))
-community = mergeTwoModels(member1,member2);
+comm = mergeTwoModels(member1,member2);
+community = mergeTwoModels(comm,member3);
 
 % Make sure that the biomass production is the objective function.
 [~,ibio1] = ismember('BIOMASS_m1',community.rxns);
 [~,ibio2] = ismember('BIOMASS_m2',community.rxns);
+[~,ibio3] = ismember('BIOMASS_m3',community.rxns);
 community.c(ibio1) = 1;
 community.c(ibio2) = 1;
-community = changeRxnBounds(community,community.rxns(ibio1),1,'l');
-community = changeRxnBounds(community,community.rxns(ibio2),0.1,'l');
+community.c(ibio3) = 1;
+community = changeRxnBounds(community,community.rxns(ibio1),0.9,'l');
+community = changeRxnBounds(community,community.rxns(ibio2),0.09,'l');
+community = changeRxnBounds(community,community.rxns(ibio3),0.09,'l');
 
 %% Make the common exchange compartment
 EX_name = community_media{1};
@@ -45,7 +51,7 @@ community = changeRxnBounds(community,rxnsEx,EX_ub,'u');
 [~,iEx] = ismember(rxnsEx,community.rxns);
 community.rxns(iEx) = strrep(rxnsEx,'[e]','(e)_e');
 iEX = (~cellfun('isempty',regexp(community.rxns,'.*\[e\]$','match')));
-community.rxns(iEX) = strrep(community.rxns(iEX),'[e]','(e)_d3');
+community.rxns(iEX) = strrep(community.rxns(iEX),'[e]','(e)_d');
 
 %% Check the community model for discrepancies
 
@@ -55,15 +61,19 @@ m1match = regexp(community.rxns,'.*_m1$','match');
 d1match = regexp(community.rxns,'.*_d1$','match');
 m2match = regexp(community.rxns,'.*_m2$','match');
 d2match = regexp(community.rxns,'.*_d2$','match');
-ematch = regexp(community.rxns,'.*_e$','match');
+m3match = regexp(community.rxns,'.*_m3$','match');
 d3match = regexp(community.rxns,'.*_d3$','match');
+ematch = regexp(community.rxns,'.*_e$','match');
+dmatch = regexp(community.rxns,'.*_d$','match');
 m1 = (~cellfun('isempty',m1match));
 d1 = (~cellfun('isempty',d1match));
 m2 = (~cellfun('isempty',m2match));
 d2 = (~cellfun('isempty',d2match));
-e = (~cellfun('isempty',ematch));
+m3 = (~cellfun('isempty',m3match));
 d3 = (~cellfun('isempty',d3match));
-test = m1 + d1 + m2 + d2 + e + d3;
+e = (~cellfun('isempty',ematch));
+d = (~cellfun('isempty',dmatch));
+test = m1 + d1 + m2 + d2 + m3 + d3 + e + d;
 if any(test==1) && sum(test)==length(community.rxns)
     fprintf('The reactions are properly organized. Proceed.\n');
 else
@@ -77,19 +87,19 @@ end
 [nmets,nrxns] = size(community.S);
 
 % MILP formulation.
-% x = [v y] (2*nrxns x 1)
+% x = [v y] (2*nrxns x 1)'PPC','PPCK'
 ctype = char(['C' * ones(1,nrxns) 'B' * ones(1,nrxns)]);
-f = [sparse(nrxns,1); d1+d2+d3];
+f = [sparse(nrxns,1); d1+d2+d3+d];
 
-lb_all = spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns))*community.lb;
-ub_all = spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns))*community.ub;
+lb_all = spdiags(m1+d1+m2+d2+m3+d3+e+d,0,sparse(nrxns,nrxns))*community.lb;
+ub_all = spdiags(m1+d1+m2+d2+m3+d3+e+d,0,sparse(nrxns,nrxns))*community.ub;
 
-Aineq = [-spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns)) spdiags(lb_all,0,sparse(nrxns,nrxns));
-          spdiags(m1+d1+m2+d2+e+d3,0,sparse(nrxns,nrxns)) -spdiags(ub_all,0,sparse(nrxns,nrxns))];
+Aineq = [-spdiags(m1+d1+m2+d2+m3+d3+e+d,0,sparse(nrxns,nrxns)) spdiags(lb_all,0,sparse(nrxns,nrxns));
+          spdiags(m1+d1+m2+d2+m3+d3+e+d,0,sparse(nrxns,nrxns)) -spdiags(ub_all,0,sparse(nrxns,nrxns))];
 bineq = sparse(2*nrxns,1);
 Aeq = [community.S sparse(nmets,nrxns)];
 beq = sparse(nmets,1);
-lb = [community.lb; m1+m2+e];
+lb = [community.lb; m1+m2+m3+e];
 ub = [community.ub; ones(nrxns,1)];
 
 prob.ctype = ctype;
@@ -121,7 +131,7 @@ v = x(1:nrxns);
 y = x(nrxns+1:end);
 data = [community.rxns(y>0.5) num2cell(v(y>0.5))];
 T = cell2table(data,'VariableNames',{'Reaction','Flux'});
-writetable(T,'Solution_Fluxes.xlsx');
+writetable(T,'SolutionFluxes.xlsx');
 
 % Save the fluxes of the exchange and the added database reactions for the 10 best solutions.
 sols = solutions.pool.solution;
@@ -153,11 +163,11 @@ ex_rxns = unique(ex_rxns);
 fluxes = Vs(index,:);
 data = [ex_rxns num2cell(fluxes)];
 T = cell2table(data,'VariableNames',{'ExchangeReaction','Solution1','Solution2','Solution3','Solution4','Solution5','Solution6','Solution7','Solution8','Solution9','Solution10'});
-writetable(T,'Solution_ExchangeReaction_Fluxes.xlsx');
+writetable(T,'SolutionExchangeReactionFluxes.xlsx');
 
 d_rxns = unique(d_rxns);
 [~,index] = ismember(d_rxns,community.rxns);
 fluxes = Vs(index,:);
 data = [d_rxns num2cell(fluxes)];
 T = cell2table(data,'VariableNames',{'Reaction','Solution1','Solution2','Solution3','Solution4','Solution5','Solution6','Solution7','Solution8','Solution9','Solution10'});
-writetable(T,'Solution_AddedDatabaseReaction_Fluxes.xlsx');
+writetable(T,'SolutionAddedDatabaseReactionFluxes.xlsx');

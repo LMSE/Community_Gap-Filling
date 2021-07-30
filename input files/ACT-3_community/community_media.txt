@@ -34,6 +34,6 @@ EX_pyr(e) Pyruvate 0 1000
 EX_succ(e) Succinate 0 1000
 EX_h(e) H(+) 0 5.8
 EX_cf(e) Chloroform -5.8 0
-EX_dcm(e) Dichoromethane 0 5.8
+EX_dcm(e) Dichloromethane 0 5.8
 EX_cl(e) Cl- -1000 1000
 EX_com(e) CoenzymeM -1000 0
